@@ -1,25 +1,22 @@
 import express from "express";
-import data from "./data.js";
+import connectDB from "./connectionDB.js";
+import dotenv from "dotenv";
+import userRouter from "./routers/UserRouter.js";
+import productRouter from "./routers/productRouter.js";
 
+dotenv.config();
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+connectDB();
+
+app.use("/api/users", userRouter);
+app.use("/api/products", productRouter);
 
 app.get("/", (req, res) => res.send("server is ready"));
-
-app.get("/api/products/:id", (req, res) => {
-  const product = data.products.find((x) => x._id === req.params.id);
-  console.log(data.products);
-  if (product) {
-    res.send(product);
-  } else {
-    res.status(404).send({ message: "Product not found" });
-  }
-  res.send(data.products);
+app.use((err, req, res, next) => {
+  res.status(500).send({ message: err.message });
 });
-
-app.get("/api/products", (req, res) => {
-  res.send(data.products);
-});
-
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Serve at http://localhost:${port}`);
